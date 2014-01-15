@@ -23,13 +23,11 @@
 - (NSString *)searchResultStringForRepresentedObject:(id)object;
 - (void)setSearchResultsVisible:(BOOL)visible;
 - (void)resultsForSearchString:(NSString *)searchString;
-- (void)presentpopoverAtTokenFieldCaretAnimated:(BOOL)animated;
 @end
 
 @implementation TITokenFieldView {
 	UIView * _contentView;
 	NSMutableArray * _resultsArray;
-	UIPopoverController * _popoverController;
 }
 @dynamic delegate;
 @synthesize showAlreadyTokenized = _showAlreadyTokenized;
@@ -96,30 +94,16 @@
 	[_contentView setBackgroundColor:[UIColor clearColor]];
 	[self addSubview:_contentView];
 	
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad){
-		
-		UITableViewController * tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-		[tableViewController.tableView setDelegate:self];
-		[tableViewController.tableView setDataSource:self];
-		[tableViewController setContentSizeForViewInPopover:CGSizeMake(400, 400)];
-		
-		_resultsTable = tableViewController.tableView;
-		
-		_popoverController = [[UIPopoverController alloc] initWithContentViewController:tableViewController];
-	}
-	else
-	{
-		_resultsTable = [[UITableView alloc] initWithFrame:CGRectMake(0, tokenFieldBottom + 1, self.bounds.size.width, 10)];
-		[_resultsTable setSeparatorColor:[UIColor colorWithWhite:0.85 alpha:1]];
-		[_resultsTable setBackgroundColor:[UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1]];
-		[_resultsTable setDelegate:self];
-		[_resultsTable setDataSource:self];
-		[_resultsTable setHidden:YES];
-		[self addSubview:_resultsTable];
-		
-		_popoverController = nil;
-	}
-	
+
+    _resultsTable = [[UITableView alloc] initWithFrame:CGRectMake(0, tokenFieldBottom + 1, self.bounds.size.width, 10)];
+    [_resultsTable setSeparatorColor:[UIColor colorWithWhite:0.85 alpha:1]];
+    [_resultsTable setBackgroundColor:[UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1]];
+    [_resultsTable setDelegate:self];
+    [_resultsTable setDataSource:self];
+    [_resultsTable setHidden:YES];
+    [self addSubview:_resultsTable];
+    
+
 	[self bringSubviewToFront:_separator];
 	[self bringSubviewToFront:_tokenField];
 	[self updateContentSize];
@@ -135,11 +119,6 @@
 	[_resultsTable setFrame:((CGRect){_resultsTable.frame.origin, {width, _resultsTable.bounds.size.height}})];
 	[_contentView setFrame:((CGRect){_contentView.frame.origin, {width, (frame.size.height - CGRectGetMaxY(_tokenField.frame))}})];
 	[_tokenField setFrame:((CGRect){_tokenField.frame.origin, {width, _tokenField.bounds.size.height}})];
-	
-	if (_popoverController.popoverVisible){
-		[_popoverController dismissPopoverAnimated:NO];
-		[self presentpopoverAtTokenFieldCaretAnimated:NO];
-	}
 	
 	[self updateContentSize];
 	[self setNeedsLayout];
@@ -297,17 +276,10 @@
 	return nil;
 }
 
-- (void)setSearchResultsVisible:(BOOL)visible {
-	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad){
-		
-		if (visible) [self presentpopoverAtTokenFieldCaretAnimated:YES];
-		else [_popoverController dismissPopoverAnimated:YES];
-	}
-	else
-	{
-		[_resultsTable setHidden:!visible];
-		[_tokenField setResultsModeEnabled:visible];
-	}
+- (void)setSearchResultsVisible:(BOOL)visible
+{
+    [_resultsTable setHidden:!visible];
+    [_tokenField setResultsModeEnabled:visible];
 }
 
 - (void)resultsForSearchString:(NSString *)searchString {
@@ -390,13 +362,6 @@
   [_resultsTable reloadData];
 }
 
-- (void)presentpopoverAtTokenFieldCaretAnimated:(BOOL)animated {
-	
-    UITextPosition * position = [_tokenField positionFromPosition:_tokenField.beginningOfDocument offset:2];
-	
-	[_popoverController presentPopoverFromRect:[_tokenField caretRectForPosition:position] inView:_tokenField
-					 permittedArrowDirections:UIPopoverArrowDirectionUp animated:animated];
-}
 
 #pragma mark Other
 - (NSString *)description {
