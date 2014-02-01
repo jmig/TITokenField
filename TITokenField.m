@@ -69,8 +69,8 @@
 	_showAlreadyTokenized = NO;
     _searchSubtitles = YES;
     _forcePickSearchResult = NO;
-  _shouldSortResults = YES;
-  _shouldSearchInBackground = NO;
+    	_shouldSortResults = YES;
+    	_shouldSearchInBackground = NO;
 	_resultsArray = [NSMutableArray array];
 	
 	_tokenField = [[TITokenField alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, 42)];
@@ -445,7 +445,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	[self addTarget:self action:@selector(didChangeText) forControlEvents:UIControlEventEditingChanged];
 
 	[self setPromptText:@"To:"];
-	[self setText:kTextEmpty];
+    	[self setText:kTextEmpty];
 	
 	_internalDelegate = [[TITokenFieldInternalDelegate alloc] init];
 	[_internalDelegate setTokenField:self];
@@ -455,6 +455,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	_editable = YES;
 	_removesTokensOnEndEditing = YES;
 	_tokenizingCharacters = [NSCharacterSet characterSetWithCharactersInString:@","];
+    _tokenLimit = -1;
 }
 
 #pragma mark Property Overrides
@@ -594,6 +595,19 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	return nil;
 }
 
+- (void)addTokensWithTitleList:(NSString *)titleList {
+    if ([titleList length] > 0) {
+        self.text = titleList;
+        [self tokenizeText];
+    }
+}
+
+- (void)addTokensWithTitleArray:(NSArray *)titleArray {
+    for (NSString *title in titleArray) {
+        [self addTokenWithTitle:title];
+    }
+}
+
 - (void)addToken:(TIToken *)token {
 	
 	BOOL shouldAdd = YES;
@@ -707,7 +721,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	CGFloat leftMargin = self.leftViewWidth + 12;
 	CGFloat hPadding = 8;
 	CGFloat rightMargin = self.rightViewWidth + hPadding;
-	CGFloat lineHeight = self.font.lineHeight + topMargin + 5;
+	CGFloat lineHeight = ceilf(self.font.lineHeight) + topMargin + 5;
 	
 	_numberOfLines = 1;
 	_tokenCaret = (CGPoint){leftMargin, (topMargin - 1)};
@@ -736,7 +750,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 		}
 	}];
 	
-	return _tokenCaret.y + lineHeight;
+	return ceilf(_tokenCaret.y + lineHeight);
 }
 
 #pragma mark View Handlers
@@ -947,6 +961,11 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	if ([_delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:)]){
 		return [_delegate textField:textField shouldChangeCharactersInRange:range replacementString:string];
 	}
+    
+    if (_tokenField.tokenLimit!=-1 &&
+        [_tokenField.tokens count] >= _tokenField.tokenLimit) {
+        return NO;
+    }
 	
 	return YES;
 }
