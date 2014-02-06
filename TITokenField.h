@@ -71,6 +71,10 @@
 @property (weak, nonatomic, readonly) NSArray * tokenTitles;
 
 - (void)updateContentSize;
+/**
+ *  Remove all objects from search and display the source Array in the results view
+ */
+- (void)reloadResultsTableWithSourceArray;
 
 @end
 

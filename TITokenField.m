@@ -211,7 +211,6 @@
     [_tokenField addToken:token];
 	
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
-	[self setSearchResultsVisible:NO];
 }
 
 #pragma mark TextField Methods
@@ -360,6 +359,16 @@
 -(void) reloadResultsTable {
   [_resultsTable setHidden:NO];
   [_resultsTable reloadData];
+}
+
+- (void)reloadResultsTableWithSourceArray
+{
+    [_resultsArray removeAllObjects];
+    [self setSearchResultsVisible:YES];
+    [self.tokenField setResultsModeEnabled:YES];
+    if (_sourceArray) {
+        [self searchDidFinish:_sourceArray];
+    }
 }
 
 
